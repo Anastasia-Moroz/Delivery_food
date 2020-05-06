@@ -20,13 +20,25 @@ const cardsMenu = document.querySelector('.cards-menu');
 let login = localStorage.getItem('gloDelivery');
 
 
-function toggleModal() {
+const valid = function(str) {
+  const nameReg = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/;
+  return nameReg.test(str);
+}
+
+valid()
+const toggleModal = function () {
   modal.classList.toggle("is-open");
 }
 
 function toogleModalAuth() {
-  loginInput.style.borderColor = '';
   modalAuth.classList.toggle('is-open');
+  loginInput.style.borderColor = '';
+}
+
+function returnMain() {
+  containerPromo.classList.remove('hide');
+  restaurants.classList.remove('hide');
+  menu.classList.add('hide');
 }
 
 function authorized() {
@@ -39,18 +51,17 @@ function authorized() {
     buttonOut.style.display = '';
     buttonOut.removeEventListener('click', logOut);
     checkAuth();
+    returnMain();
   }
 
   console.log('Авторизован');
 
   userName.textContent = login;
-
   buttonAuth.style.display = 'none';
   userName.style.display = 'inline';
   buttonOut.style.display = 'block';
 
   buttonOut.addEventListener('click', logOut)
-  cardsRestaurants.removeEventListener('click', toogleModalAuth);
 
 }
 
@@ -59,9 +70,8 @@ function notAuthorized() {
   
   function logIn(event) {
     event.preventDefault();
-
-    if (loginInput.value.trim()){
-
+    if (valid(loginInput.value.trim())){
+      loginInput.style.borderColor = '';
       login = loginInput.value;
       localStorage.setItem('gloDelivery', login);
       toogleModalAuth();
@@ -72,12 +82,12 @@ function notAuthorized() {
       checkAuth();
     } else {
       loginInput.style.borderColor = 'tomato';
+      loginInput.value = '';
     }
-    }
+  }
 
   buttonAuth.addEventListener('click', toogleModalAuth);
   closeAuth.addEventListener('click', toogleModalAuth);
-  cardsRestaurants.addEventListener('click', toogleModalAuth);
   logInForm.addEventListener('submit', logIn);
   
 }
@@ -110,16 +120,12 @@ function createcardsRestaurant() {
     </div>
   </a>
   `;
-
   cardsRestaurants.insertAdjacentHTML('beforeend', card)
-  
 }
 
 function createCardGood() {
-
   const card = document.createElement('div');
   card.className = 'card';
-
   card.insertAdjacentHTML('beforeend', `
     <img src="img/pizza-plus/pizza-classic.jpg" alt="image" class="card-image"/>
     <div class="card-text">
@@ -140,31 +146,33 @@ function createCardGood() {
       </div>
     </div>
   `);
+  cardsMenu.insertAdjacentElement('beforeend', card);
 
-  cardsMenu.insertAdjacentElement('beforeend', card)
 }
 
 function openGoods(event) {
   const target = event.target;
 
-  const restaurant = target.closest('.card-restaurant');
+    const restaurant = target.closest('.card-restaurant');
+    if (restaurant){
 
-  if (restaurant){
-    cardsMenu.textContent = '';
-    containerPromo.classList.add('hide');
-    restaurants.classList.add('hide');
-    menu.classList.remove('hide');
-
-    createCardGood();
-    createCardGood();
-    createCardGood();
-  }
+      if (login) {
+        cardsMenu.textContent = '';
+        containerPromo.classList.add('hide');
+        restaurants.classList.add('hide');
+        menu.classList.remove('hide');
+        createCardGood();
+        createCardGood();
+        createCardGood();
+      } else {
+        toogleModalAuth();
+      }  
+    }
 }  
 
 cartButton.addEventListener("click", toggleModal);
 
 close.addEventListener("click", toggleModal);
-
 
 cardsRestaurants.addEventListener('click', openGoods);
 
@@ -180,3 +188,12 @@ checkAuth();
 createcardsRestaurant();
 createcardsRestaurant();
 createcardsRestaurant();
+
+new Swiper('.container-promo', {
+  loop: true,
+  autoplay: {
+    delay: 3000,
+  },
+  SlidePerView: 1,
+  SlidePerColumn: 1,
+})
