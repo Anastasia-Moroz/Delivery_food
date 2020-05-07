@@ -20,6 +20,7 @@ const restaurantTitle = document.querySelector('.restaurant-title');
 const rating = document.querySelector('.rating');
 const minPrice = document.querySelector('.price');
 const category = document.querySelector('.category');
+const inputSearch = document.querySelector('.input-search');
 
 let login = localStorage.getItem('gloDelivery');
 
@@ -34,13 +35,7 @@ const getData = async function(url) {
 
   return await response.json();
 
-
 };
-
-
-
-
-
 
 const valid = function(str) {
   const nameReg = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/;
@@ -217,7 +212,63 @@ function init() {
   cardsRestaurants.addEventListener('click', openGoods);
   
   logo.addEventListener('click', returnMain);
+
+  inputSearch.addEventListener('keydown', function(event) {
+
+    if (event.keyCode === 13) {
+      const target = event.target;
+      
+      const value = target.value.toLowerCase().trim();
   
+      target.value = '';
+  
+      if (!value || value.length < 3) {
+        target.style.backgroundColor = 'tomato';
+        setTimeout(function(){
+          target.style.backgroundColor = '';
+        }, 2000);
+        return;
+      }
+  
+      const goods = [];
+      
+      getData('./db/partners.json')
+        .then(function(data) {
+          
+          const products = data.map(function(item){
+            return item.products;
+          });
+  
+          products.forEach(function(product){
+            getData(`./db/${product}`)
+              .then(function(data){
+                
+                goods.push(...data);
+  
+                const searchGoods = goods.filter(function(item) {
+                  return item.name.toLowerCase().includes(value)
+                })
+                  
+                cardsMenu.textContent = '';
+  
+                containerPromo.classList.add('hide');
+                restaurants.classList.add('hide');
+                menu.classList.remove('hide');
+  
+                restaurantTitle.textContent = 'Результат поиска';
+                rating.textContent = '';
+                minPrice.textContent = '';
+                category.textContent = '';
+  
+                return searchGoods;
+              })
+              .then(function(data){
+                data.forEach(createCardGood);
+              })
+          })
+        });
+    } 
+  });
   checkAuth();
   
   
@@ -232,3 +283,5 @@ function init() {
 }
 
 init();
+
+
